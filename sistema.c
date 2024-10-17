@@ -133,3 +133,95 @@ int AvaliaMelhorSistema(const SistemaSolar* sistemaA, const SistemaSolar* sistem
         return 0;
     }
 }
+
+void Ritacao(SistemaSolar* sistemas, int esquerda1, int direita1, int esquerda2, int direita2) {
+    int tamanho1 = direita1 - esquerda1;
+    int tamanho2 = direita2 - esquerda2;
+
+    // Criar cópias dos vetores de sistemas solares
+    SistemaSolar* copia1 = (SistemaSolar*)malloc(tamanho1 * sizeof(SistemaSolar));
+    SistemaSolar* copia2 = (SistemaSolar*)malloc(tamanho2 * sizeof(SistemaSolar));
+
+    // Copiar os sistemas solares para as cópias
+    for (int i = 0; i < tamanho1; i++) {
+        copia1[i] = sistemas[esquerda1 + i];
+    }
+
+    for (int i = 0; i < tamanho2; i++) {
+        copia2[i] = sistemas[esquerda2 + i];
+    }
+
+    int i = 0, j = 0, k = esquerda1;
+
+    while (i < tamanho1 && j < tamanho2) {
+        if (AvaliaMelhorSistema(&copia1[i], &copia2[j])) {
+            sistemas[k] = copia1[i];
+            i++;
+        } else {
+            sistemas[k] = copia2[j];
+            j++;
+        }
+        k++;
+    }
+
+    // Copiar os elementos restantes, se houver, de copia1
+    while (i < tamanho1) {
+        sistemas[k] = copia1[i];
+        i++;
+        k++;
+    }
+
+    // Copiar os elementos restantes, se houver, de copia2
+    while (j < tamanho2) {
+        sistemas[k] = copia2[j];
+        j++;
+        k++;
+    }
+
+    // Libera memória das cópias
+    free(copia1);
+    free(copia2);
+}
+
+
+void BromeroSort(SistemaSolar* sistemas, int esquerda, int direita) {//BromeroSort igual ao codigo do PDF da atividade
+    int tamanho = direita - esquerda;
+    if (tamanho == 1) {
+        return; // sistema já ordenado
+    }
+    if (tamanho % 2 == 1) {
+        BromeroSort(sistemas, esquerda, direita - 1);
+        Ritacao(sistemas, esquerda, direita - 1, direita - 1, direita);
+        return;
+    }
+    int meio = (direita + esquerda) / 2;
+    BromeroSort(sistemas, esquerda, meio);
+    BromeroSort(sistemas, meio, direita);
+    Ritacao(sistemas, esquerda, meio, meio, direita);
+}
+
+
+int main() {
+    int n_sistemas;
+    scanf("%d", &n_sistemas); //Solicita a quantidade de sistemas
+
+    NumSistemas sistemas;
+    LeSistemas(&sistemas, n_sistemas);//Chama a função que faz a leitura dos sistemas
+
+    BromeroSort(sistemas.SistemasSistemas, 0, n_sistemas);//Chama a função de separação do BromeroSort
+
+    for (int i = 0; i < n_sistemas; i++) {
+        printf("\n%s", sistemas.SistemasSistemas[i].NomeSistema);//imprime na tela os sistemas em ordem do mais interessante para o menos interessante
+    }
+
+
+    for (int i = 0; i < n_sistemas; i++) {//Libera memória alocada
+        for (int j = 0; j < sistemas.SistemasSistemas[i].QuantPlanetas; j++) {
+            free(sistemas.SistemasSistemas[i].PlanetasSistema[j].Luas);
+        }
+        free(sistemas.SistemasSistemas[i].PlanetasSistema);
+    }
+    free(sistemas.SistemasSistemas);
+
+    return 0;
+}
